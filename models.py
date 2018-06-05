@@ -2,6 +2,7 @@ from database import Base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.types import DateTime
 
+
 class Items(Base):
     """
     Items table

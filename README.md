@@ -65,3 +65,24 @@ No, you should focus on the functionality. Your engineering team will bring on a
 ### Should I use orchestration tools like Kubernetes?
 While technologies like Kubernetes are quite powerful, they're likely overkill for the simple application in this puzzle. We recommend that you stick to Docker Compose for this puzzle.
 
+# Solution Approach
+
+### Set up and Understanding
+1. Initially I had to set up the correct docker-engine and docker-compose in order to be able to use version 3 in docker-compose.yml file.
+2. I took a moment to read through the code and understand what is actually going on:
+    * The db container sets up a postgres database image. Based on database.py it appears the database is hosted on port 5432.
+    * The flaskapp container is building/starting up the flask app 
+    * The nginx container is the image for the server in flaskapp.conf where the HOST port is at 80 and is connecting to a container port at 8080
+    * The python scripts (app.py, forms.py, models.py) are setting up the skeleton and functioning of the web page. 
+
+### Testing and Debugging
+1. Upon running the docker commands, an error is thrown "listen tcp 0.0.0.0:80: listen: address already in use". This happens after we have already started up the first two containers smoothly, so it seems the issue is with the nginx container.
+2. Taking a look at flaskapp.conf, the server is trying to listen at port 80 but failing there.
+3. This is due to the fact that in our container we specify port 80 as our HOST port thereby occupying it.
+4. I determine that the HOST port for the container should be 8080 (localhost will later connect to 8080 to pull up the website) and it should try to connect to 80, to which the server will be listening to.
+5. Changed the line from "80:8080" to "8080:80".
+6. The nginx container runs fine, and upon trying to open the web page a Bad Gateway error is thrown.
+7. I was using the docker plugins in PyCharm to debug the code and I saw in the log files for the flaskapp container it was "Running on http://0.0.0.0:5000/"
+8. However the proxy_pass in the sever is trying to connect flaskapp to port 5001. That's a bug! :D change that to 5000 in flaskapp.conf
+9. The only other place in the code 5001 was specified is in exposing that port in the Dockerfile. So I change that as well.
+10. Web page opens up just fine! Testing it reveals that the success page has a bug in it. It does not show the items that have been input.

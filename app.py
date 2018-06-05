@@ -9,15 +9,18 @@ from database import db_session
 app = Flask(__name__)
 app.secret_key = os.environ['APP_SECRET_KEY']
 
+
 @app.route("/", methods=('GET', 'POST'))
 def add_item():
     form = ItemForm()
     if form.validate_on_submit():
-        item = Items(name=form.name.data, quantity=form.quantity.data, description=form.description.data, date_added=datetime.datetime.now())
+        item = Items(name=form.name.data, quantity=form.quantity.data, description=form.description.data,
+                     date_added=datetime.datetime.now())
         db_session.add(item)
         db_session.commit()
         return redirect(url_for('success'))
     return render_template('index.html', form=form)
+
 
 @app.route("/success")
 def success():
