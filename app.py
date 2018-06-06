@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 
 from flask import Flask, render_template, redirect, url_for
 from forms import ItemForm
@@ -24,12 +25,15 @@ def add_item():
 
 @app.route("/success")
 def success():
-    results = []
- 
     qry = db_session.query(Items)
     results = qry.all()
 
-    return str(results)
+    keys = list(map(lambda x: x.name, results))
+    values = list(map(lambda x: x.quantity, results))
+
+    results_dict = dict(zip(keys, values))
+
+    return str(results_dict)
   
 
 if __name__ == '__main__':

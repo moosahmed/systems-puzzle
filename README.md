@@ -1,88 +1,54 @@
-# Insight DevOps Engineering Systems Puzzle
+# Insight DevOps Engineering Systems Puzzle Solution
 
 ## Table of Contents
-1. [Understanding the puzzle](README.md#understanding-the-puzzle)
-2. [Introduction](README.md#introduction)
-3. [Puzzle details](README.md#puzzle-details)
-4. [Instructions to submit your solution](README.md#instructions-to-submit-your-solution)
-5. [FAQ](README.md#faq)
+1. [Puzzle description](README.md#understanding-the-puzzle)
+2. [Solution approach](README.md#solution-approach)
+3. [Repo directory structure](README.md#repo-directory-structure)
 
-# Understanding the puzzle
+## Puzzle description
+https://github.com/InsightDataScience/systems-puzzle
 
-We highly recommend that you take a few dedicated minutes to read this README in its entirety before starting to think about potential solutions. You'll probably find it useful to review the codebase and understand the system at a high-level before attempting to find specific bugs.
-
-# Introduction
-
-Imagine you're on an engineering team that is building an eCommerce site where users can buy and sell items (similar to Etsy or eBay). One of the developers on your team has put together a very simple prototype for a system that writes and reads to a database. The developer is using Postgres for the backend database, the Python Flask framework as an application server, and nginx as a web server. All of this is developed with the Docker Engine, and put together with Docker Compose.
-
-Unfortunately, the developer is new to many of these tools, and is having a number of issues. The developer needs your help debugging the system and getting it to work properly.
-
-# Puzzle details
-
-The codebase included in this repo is nearly functional, but has a few bugs that are preventing it from working properly. The goal of this puzzle is to find these bugs and fix them. To do this, you'll have to familiarize yourself with the various technologies (Docker, nginx, Flask, and Postgres) enough to figure out  You definitely don't have to be an expert on these, but you should know them well enough to understand what the problem is.
-
-Assuming you have the Docker Engine and Docker Compose already installed, the developer said that the steps for running the system is to open a terminal, `cd` into this repo, and then enter these two commands:
-
-    docker-compose up -d db
-    docker-compose run --rm flaskapp /bin/bash -c "cd /opt/services/flaskapp/src && python -c  'import database; database.init_db()'"
-
-This "bootstraps" the PostgreSQL database with the correct tables. After that you can run the whole system with:
-
-    docker-compose up -d
-
-At that point, the web application should be visible by going to `localhost:8080` in a web browser. 
-
-Once you've corrected the bugs and have the basic features working, commit the functional codebase to a new repo following the instructions below. As you debug the system, you should keep track of your thought process and what steps you took to solve the puzzle.
-
-## Instructions to submit your solution
-* Don't schedule your interview until you've worked on the puzzle 
-* To submit your entry please use the link you received in your systems puzzle invitation
-* You will only be able to submit through the link one time
-* For security, we will not open solutions submitted via files
-* Use the submission box to enter the link to your GitHub repo or Bitbucket ONLY
-* Link to the specific repo for this project, not your general profile
-* Put any comments in the README inside your project repo
-
-# FAQ
-
-Here are some common questions we've received. If you have additional questions, please email us at `devops@insightdata.com` and we'll answer your questions as quickly as we can (during PST business hours), and update this FAQ. Again, only contact us after you have read through the Readme and FAQ one more time and cannot find the answer to your question.
-
-### Which Github link should I submit?
-You should submit the URL for the top-level root of your repository. For example, this repo would be submitted by copying the URL `https://github.com/InsightDataScience/systems-puzzle` into the appropriate field on the application. **Do NOT try to submit your coding puzzle using a pull request**, which would make your source code publicly available.
-
-### Do I need a private Github repo?
-No, you may use a public repo, there is no need to purchase a private repo. You may also submit a link to a Bitbucket repo if you prefer.
-
-### What sort of system should I use to run my program (Windows, Linux, Mac)?
-You should use Docker to run and test your solution, which should work on any operating system. If you're unfamiliar with Docker, we recommend attending one of our Online Tech Talks on Docker, which you should've received information about in your invitation. Alternatively, there are ample free resources available on docker.com.
-
-### How will my solution be evaluated?
-While we will review your submission briefly before your interview, the main point of this puzzle is to serve as content for discussion during the interview. In the interview, we'll evaluate your problem solving and debugging skills based off how you solved this puzzle, so be sure to document your thought process.
-
-### This eCommerce site is ugly...should I improve the design?  
-No, you should focus on the functionality. Your engineering team will bring on a designer and front-end developer later in the process, so don't worry about that aspect in this puzzle. If you have extra time, it would be far better to focus on aspects that make the code cleaner and easier to use, like tests and refactoring.
-
-### Should I use orchestration tools like Kubernetes?
-While technologies like Kubernetes are quite powerful, they're likely overkill for the simple application in this puzzle. We recommend that you stick to Docker Compose for this puzzle.
-
-# Solution Approach
-
-### Set up and Understanding
-1. Initially I had to set up the correct docker-engine and docker-compose in order to be able to use version 3 in docker-compose.yml file.
+## Solution approach
+### Set up and understanding
+1. Initially I had to set up the correct docker-engine and docker-compose in order to be able to use version 3 in `docker-compose.yml`.
 2. I took a moment to read through the code and understand what is actually going on:
-    * The db container sets up a postgres database image. Based on database.py it appears the database is hosted on port 5432.
-    * The flaskapp container is building/starting up the flask app 
-    * The nginx container is the image for the server in flaskapp.conf where the HOST port is at 80 and is connecting to a container port at 8080
-    * The python scripts (app.py, forms.py, models.py) are setting up the skeleton and functioning of the web page. 
+    * The db container sets up a postgres database image. Based on `database.py` it appears the database is hosted on port `5432`.
+    * The flaskapp container is building/starting up the flask app server.
+    * The nginx container is the image for the web server in `flaskapp.conf` where the HOST port is at `80` and is connecting to a container port at `8080`.
+    * The python scripts (`app.py`, `forms.py`, `models.py`) are setting up the skeleton and functioning of the web page. 
 
-### Testing and Debugging
-1. Upon running the docker commands, an error is thrown "listen tcp 0.0.0.0:80: listen: address already in use". This happens after we have already started up the first two containers smoothly, so it seems the issue is with the nginx container.
-2. Taking a look at flaskapp.conf, the server is trying to listen at port 80 but failing there.
-3. This is due to the fact that in our container we specify port 80 as our HOST port thereby occupying it.
-4. I determine that the HOST port for the container should be 8080 (localhost will later connect to 8080 to pull up the website) and it should try to connect to 80, to which the server will be listening to.
-5. Changed the line from "80:8080" to "8080:80".
-6. The nginx container runs fine, and upon trying to open the web page a Bad Gateway error is thrown.
-7. I was using the docker plugins in PyCharm to debug the code and I saw in the log files for the flaskapp container it was "Running on http://0.0.0.0:5000/"
-8. However the proxy_pass in the sever is trying to connect flaskapp to port 5001. That's a bug! :D change that to 5000 in flaskapp.conf
-9. The only other place in the code 5001 was specified is in exposing that port in the Dockerfile. So I change that as well.
-10. Web page opens up just fine! Testing it reveals that the success page has a bug in it. It does not show the items that have been input.
+### Testing and debugging
+#### nginx server fix 
+1. Upon running the docker commands, an error is thrown `listen tcp 0.0.0.0:80: listen: address already in use`. It seems the issue is with the nginx container.
+2. Taking a look at `flaskapp.conf`, the server is trying to listen at port `80` but failing there.
+3. This is due to the fact that in our container we specify port 80 as our HOST port thereby already occupying it.
+4. I determine that the HOST port for the container should be `8080` because localhost will later connect to `8080` to pull up the web page.
+    Port `8080` should connect to port `80`; the port the web server will be listening on.
+5. Changed the line `80:8080` in `docker-compose.yml` to `8080:80`.
+#### Bad gateway fix
+1. The nginx container runs fine, and upon trying to open the web page a `Bad Gateway Error` is thrown.
+2. I was using the docker plugins in PyCharm to debug the code and I saw in the log files for the flaskapp container it was `Running on http://0.0.0.0:5000/`
+3. However the proxy_pass in the sever is trying to connect flaskapp to port `5001`. That's a bug! :D Change that to `5000` in `flaskapp.conf`
+4. The only other place in the code `5001` was specified is in exposing that port in the `Dockerfile`. So I changed that as well.
+#### Web page fix 
+1. Web page opens up just fine! Testing it reveals that the success page has a bug in it. It does not show the items that have been input.
+2. Since the success page had the bug it was quite clear that the bug was in the success function in `app.py`
+3. For a simple solution I had the page return a dictionary where the keys are the items and the value is the quantity
+4. More features can be added to success page, however no specs were provided on how the developer wanted in the success page.
+
+## Repo directory structure
+
+    .
+    ├── app.py 
+    ├── database.py
+    ├── docker-compose.yml
+    ├── Dockerfile
+    ├── env_file
+    ├── forms.py
+    ├── models.py
+    ├── requirements.txt
+    ├── README.md
+    ├── conf.d
+        └── flaskapp.conf
+    ├── templates
+        └── index.html
