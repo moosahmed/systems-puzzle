@@ -1,6 +1,6 @@
 import datetime
 import os
-import sys
+from operator import attrgetter
 
 from flask import Flask, render_template, redirect, url_for
 from forms import ItemForm
@@ -28,8 +28,8 @@ def success():
     qry = db_session.query(Items)
     results = qry.all()
 
-    keys = list(map(lambda x: x.name, results))
-    values = list(map(lambda x: x.quantity, results))
+    keys = map(attrgetter('name'), results)
+    values = map(attrgetter('quantity'), results)
 
     results_dict = dict(zip(keys, values))
 
