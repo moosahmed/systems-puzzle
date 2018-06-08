@@ -36,7 +36,7 @@ https://github.com/InsightDataScience/systems-puzzle
 3. For a simple solution I had the page return a dictionary where the keys are the items and the value is the quantity
 4. More features can be added to success page, however no specs were provided on how the developer wanted in the success page.
 #### Profiling
-1. I created a simple profiling function, to profile the python functions to find the "inefficiencies" that were mentioned in the tech talk.
+1. I developed a simple profiling function, to profile the python functions to find the "inefficiencies" that were mentioned in the tech talk.
 2. The results from the profiler did not reveal any glaring inefficiencies. Output can be seen in `profile.csv`
 3. A deeper dig into inefficiencies, maybe in the docker containers, the application server and web server can be conducted. However I felt that was out of the scope of this solution.
 #### Minor fixes
